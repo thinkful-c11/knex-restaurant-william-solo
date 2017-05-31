@@ -1,186 +1,97 @@
-const knex = require('knex')(DEV);
 const { DATABASE, PORT } = require('./config');
 const knex = require('knex')(DATABASE);
 
 // clear the console before each run
 process.stdout.write('\033c');
 
+//restaurants variable
+let restaurants = '';
+
 // Sample select 
-knex.select().from('restaurants')
-  .debug(true)
-  .then(results => console.log(results));
+// knex.select().from('restaurants')
+//   .debug(true)
+//   .then(results => console.log(results));
 
-//1: get all restaurants
-knex
-  .select()
-  .from('restaurants')
-  .then(results => console.log(JSON.stringify(results, null, 2)));
+//Drill 1
+// knex.select().from('restaurants')
+//   .then(results => console.log(results));
 
-//2: get Italin restaurants
-knex
-  .select()
-  .from('restaurants')
-  .where('cuisine', 'Italian')
-  //or   .where({cuisine: 'Italian'})
-  .then(results => console.log(JSON.stringify(results, null, 2)));
+//Drill 2
+// knex.select().from('restaurants')
+//   .where({cuisine:'Italian'})
+//   .then(r => console.log(r));
 
-//3: get 10 Italian restaurants, subset of fields
-knex
-  .select('id', 'name')
-  .from('restaurants')
-  .where('cuisine', 'Italian')
-  .limit(10)
-  .then(results => console.log(JSON.stringify(results, null, 2)));
+//Drill 3
+// knex.select('id', 'name').from('restaurants')
+//   .where({cuisine:'Italian'})
+//   .limit(10)
+//   .then(r => console.log(r));
 
-//4: count of Thai restaurants
-knex
-  .count('id')
-  .from('restaurants')
-  .where('cuisine', 'Thai')
-  .then(results => console.log(JSON.stringify(results, null, 2)));
+//Drill 4
+// knex.select().count().from('restaurants')
+//   .where({cuisine:'Thai'})
+//   .then(r=>console.log(JSON.stringify(r)));
 
-//5: Count of restaurants
-knex
-  .count('id')
-  .from('restaurants')
-  .then(results => console.log(JSON.stringify(results, null, 2)));
+//Drill 5
+// knex.select().count().from('restaurants')
+//   .then(r=>console.log(JSON.stringify(r)));
 
-//6: Count of Thai restaurants in a zip code
-knex
-  .count('id', 'name', 'borough', 'cuisine')
-  .from('restaurants')
-  .where('address_zipcode', 11372)
-  .andWhere('cuisine', 'Thai')
-  .then(results => console.log(JSON.stringify(results, null, 2)));
+//Drill 6
+// knex.select().count().from('restaurants')
+//   .where({cuisine:'Thai', address_zipcode:'11372'})
+//   .then(r=>console.log(JSON.stringify(r)));
 
-knex
-  .count('id', 'name', 'borough', 'cuisine')
-  .from('restaurants')
-  .where({ 'address_zipcode': 11372, 'cuisine': 'Thai' })
-  .then(results => console.log(JSON.stringify(results, null, 2)));
+//Drill 7
+// knex.select().from('restaurants')
+//   .whereIn('address_zipcode', [10012, 10013, 10014])
+//   .andWhere({cuisine:'Italian'})
+//   .orderBy('name', 'ASC')
+//   .limit(5)
+//   .then(r=>console.log(JSON.stringify(r)));
 
-//7: Italian restaurants in one of several zipcodes
-// checkout orWhere
+//Drill 8
+// knex('restaurants')
+// .returning('name')
+// .insert({
+//   name: 'Byte Cafe',
+//   borough: 'Brooklyn',
+//   cuisine: 'coffee',
+//   address_building_number: '123',
+//   address_street: 'Atlantic Avenue',
+//   address_zipcode: '11231'
+// })
+// .then(r=>console.log(JSON.stringify(r)));
 
-knex.select('id', 'name')
-  .from('restaurants')
-  .where('cuisine', 'Italian')
-  .whereIn('address_zipcode', [10012, 10013, 10014])
-  .limit(5)
-  .orderBy('name')
-  .then(results => console.log(JSON.stringify(results, null, 2)));
+//Drill 9 
+// knex('restaurants')
+//   .returning(['name','id'])
+//   .insert({
+//     name:'Soul Veg',
+//     borough:'Manhattan',
+//     cuisine:'Soul Food'
+//   })
+//   .then(r=>console.log(JSON.stringify(r)));
 
+//Drill 10
+// knex('restaurants')
+//   .returning(['name','nyc_restaurant_id'])
+//   .where({nyc_restaurant_id:'30191841'})
+//   .update({name:'DJ Reynolds Pub and Restaurant'})
+//   .then(r=>console.log(JSON.stringify(r)));
 
-//8: Create a restaurant
-knex
-  .insert({
-    name: "Byte Café",
-    borough: "Brooklyn",
-    cuisine: "coffee",
-    address_building_number: '123',
-    address_street: 'Atlantic Avenue',
-    address_zipcode: '11231'
-  })
-  .into("restaurants")
-  .then(result => console.log(JSON.stringify(result, null, 2)));
+//Drill 11
+// knex('grades')
+//   .returning('grade')
+//   .where({id:10})
+//   .del()
+//   .then(r=>console.log(r));
 
-// and verify 
-knex.select("*")
-  .from('restaurants')
-  .where('name', 'Byte Café')
-  .then(result => console.log(JSON.stringify(result, null, 2)));
-
-//9: Create a restaurant and return id and name
-knex
-  .insert({
-    name: "Ray's Famous Pizza",
-    borough: "Brooklyn",
-    cuisine: "Pizza",
-    address_building_number: '234',
-    address_street: 'Awesome Avenue',
-    address_zipcode: '11231'
-  })
-  .returning(['id', 'name'])
-  .into('restaurants')
-  .then(result => console.log(result));
-
-//10: Create three restaurants and return id and name
-knex
-  .insert([
-    { name: 'Allens Apple', borough: 'Brooklyn', cuisine: 'Seafood', address_street: 'Apple Street', address_building_number: '123', address_zipcode: 11224 },
-    { name: 'Bananas Bisto', borough: 'Manhattan', cuisine: 'American', address_street: 'Bananas Street', address_building_number: '456', address_zipcode: 11224 },
-    { name: 'Cherry Cafe', borough: 'Bronyx', cuisine: 'Dessert', address_street: 'Cherry Street', address_building_number: '789', address_zipcode: 11224 }
-  ])
-  .into('restaurants')
-  .returning(['id', 'name'])
-  .then(results => console.log(JSON.stringify(results, null, 2)));
-
-//11: Update a record
-knex('restaurants')
-  .update({name:'DJ Reynolds Pub & Restaurant'})
-  .where({nyc_restaurant_id: '30191841'})
-  .returning(['id', 'name'])
-  .then(results => console.log(JSON.stringify(results, null, 2)));
-
-// and verify
-knex
-  .select('*')
-  .from('restaurants')
-  .where('nyc_restaurant_id', '30191841')
-  .then(record => console.log(JSON.stringify(record, null, 2)));
-
-//12: Delete by id
-knex 
-  .del()
-  .from('grades')
-  .where('id', '15')
-  .then(res => console.log(JSON.stringify(res, null, 2)));
-
-//13: A blocked delete 
-knex
-  .del()
-  .from(('restaurants'))
-  .where({id: 22})
-  .returning(['name', 'id'])
-  .then(results => console.log(JSON.stringify(results, null, 2)));
-
-// Older Drills (see https://courses.thinkful.com/node-sql-001v1/project/1.1.3)
-//14: Create a table
-// knex.schema.createTable('inspectors', function(table) {
-//   table.text('first_name').notNullable();
-//   table.text('last_name').notNullable();
-//   table.specificType('borough', 'borough_options');
-// }) 
-// .then(res => console.log(JSON.stringify(res, null, 2)));
-
-//15: Update grades table
-// knex.schema.table('grades', function(table) {
-//   table.text('notes');
-// });
-
-//16: Drop the table 
-// knex.schema
-//   .dropTable('inspectors')
-//   .then(res => console.log(res));
-
-// HYDRATE drill
-const hydrated = {};
-restaurants.forEach(row => {
-  if (!(row.id in hydrated)) {
-    hydrated[row.id] = {
-      name: row.name,
-      cuisine: row.cuisine,
-      borough: row.borough,
-      grades: []
-    }
-  }
-  hydrated[row.id].grades.push({
-    gradeId: row.gradeId,
-    grade: row.grade,
-    score: row.score
-  });
-});
-console.log(JSON.stringify(hydrated, null, 2))
+//Drill 12
+// knex('restaurants')
+//   .where({id:12})
+//   .del()
+//   .then(r=>console.log(r))
+//   .catch(e=>console.log(e));
 
 // Destroy the connection pool
-knex.destroy().then(() => { console.log('closed') })
+knex.destroy().then(() => { console.log('closed');});
